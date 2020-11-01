@@ -27,6 +27,7 @@ func main() {
 	for {
 		select {
 		case msg := <-c:
+			log.Println(msg)
 			sto.Write(msg)
 		case <-q:
 			log.Println("exiting")

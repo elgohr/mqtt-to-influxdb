@@ -54,21 +54,64 @@ func TestControl(t *testing.T) {
 
 	ic := col.Collect()
 
-	expectedValue := uuid.NewV4().String()
-	expectedTopic := uuid.NewV4().String()
+	ctx, _ := context.WithDeadline(context.Background(), time.Now().Add(20*time.Second))
 
-	if to := c.Publish(expectedTopic, 0, true, expectedValue); to.Wait() && to.Error() != nil {
-		require.NoError(t, to.Error())
-	}
+	dyn := uuid.NewV4().String()
+	for _, scenario := range []struct {
+		name   string
+		topic  string
+		input  string
+		output interface{}
+	}{
+		{
+			name:   "dynamic",
+			topic:  dyn,
+			input:  dyn + "t",
+			output: dyn + "t",
+		},
+		{
+			name:   "strings",
+			topic:  "expected-string",
+			input:  `["periodic"]`,
+			output: `["periodic"]`,
+		},
+		{
+			name:   "integers",
+			topic:  "expected-int",
+			input:  "1",
+			output: 1,
+		},
+		{
+			name:   "floats",
+			topic:  "expected-int",
+			input:  "1.1",
+			output: 1.1,
+		},
+		{
+			name:  "json",
+			topic: "expected-json",
+			input: `{"clientID":"test-client","online":true,"timestamp":"2020-11-01T18:35:52Z"}`,
+			output: map[string]interface{}{
+				"clientID":  "test-client",
+				"online":    true,
+				"timestamp": "2020-11-01T18:35:52Z",
+			},
+		},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			if to := c.Publish(scenario.topic, 0, true, scenario.input); to.Wait() && to.Error() != nil {
+				require.NoError(t, to.Error())
+			}
 
-	ctx, _ := context.WithDeadline(context.Background(), time.Now().Add(1*time.Second))
-	select {
-	case calledWith := <-ic:
-		require.Equal(t, shared.Message{
-			Topic: expectedTopic,
-			Value: []byte(expectedValue),
-		}, calledWith)
-	case <-ctx.Done():
-		require.True(t, false, "got timeout")
+			select {
+			case calledWith := <-ic:
+				require.Equal(t, shared.Message{
+					Topic: scenario.topic,
+					Value: scenario.output,
+				}, calledWith)
+			case <-ctx.Done():
+				require.True(t, false, "got timeout")
+			}
+		})
 	}
 }

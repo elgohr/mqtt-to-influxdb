@@ -1,12 +1,14 @@
 package mqtt
 
 import (
+	"encoding/json"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"github.com/elgohr/mqtt-to-influxdb/shared"
 	uuid "github.com/satori/go.uuid"
 	"log"
 	"net/url"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -48,10 +50,29 @@ func (c *Collector) Collect() <-chan shared.Message {
 	messages := make(chan shared.Message)
 
 	const allMessages = "#"
+	j := map[string]interface{}{}
 	if err := check(c.mqtt.Subscribe(allMessages, 0, func(c paho.Client, m paho.Message) {
-		messages <- shared.Message{
-			Topic: m.Topic(),
-			Value: m.Payload(),
+		p := string(m.Payload())
+		if val, err := strconv.Atoi(p); err == nil {
+			messages <- shared.Message{
+				Topic: m.Topic(),
+				Value: val,
+			}
+		} else if val, err := strconv.ParseFloat(p, 64); err == nil {
+			messages <- shared.Message{
+				Topic: m.Topic(),
+				Value: val,
+			}
+		} else if err := json.Unmarshal(m.Payload(), &j); err == nil {
+			messages <- shared.Message{
+				Topic: m.Topic(),
+				Value: j,
+			}
+		} else {
+			messages <- shared.Message{
+				Topic: m.Topic(),
+				Value: p,
+			}
 		}
 	})); err != nil {
 		log.Println(err)
