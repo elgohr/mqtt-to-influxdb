@@ -17,10 +17,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build Linux
-        run: GOOS=linux GOARCH=amd64 go build -o "out/mqtt-to-influx-linux-amd64 main.go
+        run: GOOS=linux GOARCH=amd64 go build -o "out/mqtt-to-influx-linux-amd64" main.go
 
       - name: Build Raspberry
-        run: GOOS=linux GOARCH=arm GOARM=5 go build -o "out/mqtt-to-influx-linux-arm5 main.go
+        run: GOOS=linux GOARCH=arm GOARM=5 go build -o "out/mqtt-to-influx-linux-arm5" main.go
 
       - uses: AButler/upload-release-assets@v2.0
         with:
