@@ -1,15 +1,16 @@
 package logging_test
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
-	"iot/logging"
 	"log"
 	"os"
 	"path"
 	"testing"
 	"time"
+
+	"github.com/elgohr/mqtt-to-influxdb/logging"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSetup(t *testing.T) {
