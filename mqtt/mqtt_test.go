@@ -5,7 +5,6 @@ import (
 	"fmt"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"github.com/elgohr/mqtt-to-influxdb/mqtt"
-	"github.com/elgohr/mqtt-to-influxdb/shared"
 	"github.com/fhmq/hmq/broker"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
@@ -105,10 +104,9 @@ func TestControl(t *testing.T) {
 
 			select {
 			case calledWith := <-ic:
-				require.Equal(t, shared.Message{
-					Topic: scenario.topic,
-					Value: scenario.output,
-				}, calledWith)
+				require.Equal(t, scenario.topic, calledWith.Topic)
+				require.Equal(t, scenario.output, calledWith.Value)
+				require.WithinDuration(t, time.Now(), calledWith.Time, time.Second)
 			case <-ctx.Done():
 				require.True(t, false, "got timeout")
 			}

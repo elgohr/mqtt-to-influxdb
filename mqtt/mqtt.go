@@ -57,21 +57,25 @@ func (c *Collector) Collect() <-chan shared.Message {
 			messages <- shared.Message{
 				Topic: m.Topic(),
 				Value: val,
+				Time: time.Now(),
 			}
 		} else if val, err := strconv.ParseFloat(p, 64); err == nil {
 			messages <- shared.Message{
 				Topic: m.Topic(),
 				Value: val,
+				Time: time.Now(),
 			}
 		} else if err := json.Unmarshal(m.Payload(), &j); err == nil {
 			messages <- shared.Message{
 				Topic: m.Topic(),
 				Value: j,
+				Time: time.Now(),
 			}
 		} else {
 			messages <- shared.Message{
 				Topic: m.Topic(),
 				Value: p,
+				Time: time.Now(),
 			}
 		}
 	})); err != nil {
