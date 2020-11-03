@@ -11,13 +11,41 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Set up Go 1.13
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13
+      - name: Test
+        run: go test -race ./...
+      - name: Build Linux
+        run: GOOS=linux GOARCH=amd64 go build -o "out/mqtt-to-influx-linux-amd64" main.go
+      - name: Build Raspberry
+        run: GOOS=linux GOARCH=arm GOARM=5 go build -o "out/mqtt-to-influx-linux-arm5" main.go
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          release_name: ${{ github.ref }}
           draft: false
           prerelease: false
+      - name: Upload Linux Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: out/mqtt-to-influx-linux-amd64
+          asset_name: mqtt-to-influx-linux-amd64
+          asset_content_type: application/octet-stream
+      - name: Upload Raspberry Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: out/mqtt-to-influx-linux-arm5
+          asset_name: mqtt-to-influx-linux-arm5
+          asset_content_type: application/octet-stream
