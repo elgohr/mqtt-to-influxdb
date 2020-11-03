@@ -63,39 +63,38 @@ func GetEnvDefault(key string, def string) string {
 }
 
 func loadEnvironmentConfiguration(config *influxdb2.Options) *influxdb2.Options {
-	config = setWhenPresent(config, RetryInterval, func(config *influxdb2.Options, value string) *influxdb2.Options {
+	setWhenPresent(config, RetryInterval, func(config *influxdb2.Options, value string) {
 		ui, err := strconv.ParseUint(value, 10, 32)
 		if err != nil {
 			log.Printf("%s : %v \n", RetryInterval, err)
-			return config
+			return
 		}
-		return config.SetRetryInterval(uint(ui))
+		config.SetRetryInterval(uint(ui))
 	})
-	config = setWhenPresent(config, MaxRetries, func(config *influxdb2.Options, value string) *influxdb2.Options {
+	setWhenPresent(config, MaxRetries, func(config *influxdb2.Options, value string) {
 		ui, err := strconv.ParseUint(value, 10, 32)
 		if err != nil {
 			log.Printf("%s : %v \n", MaxRetries, err)
-			return config
+			return
 		}
-		return config.SetMaxRetries(uint(ui))
+		config.SetMaxRetries(uint(ui))
 	})
-	config = setWhenPresent(config, BatchSize, func(config *influxdb2.Options, value string) *influxdb2.Options {
+	setWhenPresent(config, BatchSize, func(config *influxdb2.Options, value string) {
 		ui, err := strconv.ParseUint(value, 10, 32)
 		if err != nil {
 			log.Printf("%s : %v \n", BatchSize, err)
-			return config
+			return
 		}
-		return config.SetBatchSize(uint(ui))
+		config.SetBatchSize(uint(ui))
 	})
 	return config
 }
 
-func setWhenPresent(config *influxdb2.Options, key string, changer envConfigChanger) *influxdb2.Options {
+func setWhenPresent(config *influxdb2.Options, key string, changer envConfigChanger) {
 	val := os.Getenv(key)
 	if val != "" {
-		return changer(config, val)
+		changer(config, val)
 	}
-	return config
 }
 
-type envConfigChanger func(config *influxdb2.Options, value string) *influxdb2.Options
+type envConfigChanger func(config *influxdb2.Options, value string)
