@@ -3,7 +3,7 @@ module github.com/elgohr/mqtt-to-influxdb
 go 1.13
 
 require (
-	github.com/eclipse/paho.mqtt.golang v1.2.0
+	github.com/eclipse/paho.mqtt.golang v1.3.0
 	github.com/fhmq/hmq v0.0.0-20200826092422-b8bacb4c3d2c
 	github.com/influxdata/influxdb-client-go/v2 v2.2.0
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
