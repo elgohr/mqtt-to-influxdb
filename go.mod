@@ -1,14 +1,16 @@
 module github.com/elgohr/mqtt-to-influxdb
 
-go 1.13
+go 1.15
 
 require (
-	github.com/eclipse/paho.mqtt.golang v1.2.0
+	github.com/deepmap/oapi-codegen v1.4.1 // indirect
+	github.com/eclipse/paho.mqtt.golang v1.3.0
 	github.com/fhmq/hmq v0.0.0-20200826092422-b8bacb4c3d2c
 	github.com/influxdata/influxdb-client-go/v2 v2.2.0
-	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
-	github.com/lestrrat-go/strftime v1.0.3 // indirect
+	github.com/influxdata/line-protocol v0.0.0-20201012155213-5f565037cbc9 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/net v0.0.0-20201029221708-28c70e62bb1d // indirect
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
+	golang.org/x/net v0.0.0-20201216054612-986b41b23924 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
