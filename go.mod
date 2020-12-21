@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/deepmap/oapi-codegen v1.4.1 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.0
-	github.com/fhmq/hmq v0.0.0-20200826092422-b8bacb4c3d2c
+	github.com/fhmq/hmq v0.0.0-20201202020546-6be79cbe88e6
 	github.com/influxdata/influxdb-client-go/v2 v2.2.0
 	github.com/influxdata/line-protocol v0.0.0-20201012155213-5f565037cbc9 // indirect
 	github.com/satori/go.uuid v1.2.0
