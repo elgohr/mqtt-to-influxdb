@@ -41,7 +41,7 @@ func NewStorage() (*Storage, error) {
 	}, nil
 }
 
-func (s Storage) Write(msg shared.Message) {
+func (s *Storage) Write(msg shared.Message) {
 	s.writer.WritePoint(influxdb2.NewPoint(
 		msg.Topic,
 		map[string]string{},

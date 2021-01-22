@@ -54,12 +54,20 @@ func TestStorage(t *testing.T) {
 		Value: []byte("test-string"),
 	})
 
+	t.Run("don't write same values twice", func(t *testing.T) {
+		s.Write(shared.Message{
+			Topic: topic,
+			Value: []byte("test-string"),
+		})
+	})
+
 	s.Shutdown() // for flushing
 
 	qry := fmt.Sprintf(`from(bucket:"%s")|> range(start: -1h) |> filter(fn: (r) => r._measurement == "%s")`, TestBucket, topic)
 	qres, err := tc.QueryAPI(TestOrganization).Query(context.Background(), qry)
 	require.NoError(t, err)
 	require.NoError(t, qres.Err())
+
 	records := []testRecord{}
 	for n := true; n == true; n = qres.Next() {
 		record := qres.Record()
@@ -70,6 +78,7 @@ func TestStorage(t *testing.T) {
 			})
 		}
 	}
+
 	require.Equal(t, 1, len(records))
 	require.Equal(t, topic, records[0].measurement)
 	require.Equal(t, "test-string", fmt.Sprintf("%v", records[0].value))
