@@ -9,7 +9,7 @@ require (
 	github.com/influxdata/influxdb-client-go/v2 v2.2.0
 	github.com/influxdata/line-protocol v0.0.0-20201012155213-5f565037cbc9 // indirect
 	github.com/satori/go.uuid v1.2.0
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 	golang.org/x/net v0.0.0-20201216054612-986b41b23924 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
