@@ -39,6 +39,7 @@ github.com/fhmq/hmq v0.0.0-20201202020546-6be79cbe88e6/go.mod h1:/1tZlLHpf/saZp3
 github.com/fhmq/hmq v0.0.0-20210118064538-ad7f4bc3f07a/go.mod h1:/1tZlLHpf/saZp39ZuHA96INcd2VuhtAv0gt/6FOf9Q=
 github.com/fhmq/hmq v0.0.0-20210207065031-7bf5d52fd9aa/go.mod h1:/1tZlLHpf/saZp39ZuHA96INcd2VuhtAv0gt/6FOf9Q=
 github.com/fhmq/hmq v0.0.0-20210226074401-7cc3949bbe89/go.mod h1:8LeVIPKskGx+23MAOy9fQ8HWSK7uFLjviwtfu2idxmo=
+github.com/fhmq/hmq v0.0.0-20210318020249-ccbe364f9fbe/go.mod h1:8LeVIPKskGx+23MAOy9fQ8HWSK7uFLjviwtfu2idxmo=
 github.com/getkin/kin-openapi v0.13.0/go.mod h1:WGRs2ZMM1Q8LR1QBEwUxC6RJEfaBcD0s+pcEVXFuAjw=
 github.com/getkin/kin-openapi v0.26.0/go.mod h1:WGRs2ZMM1Q8LR1QBEwUxC6RJEfaBcD0s+pcEVXFuAjw=
 github.com/getkin/kin-openapi v0.37.0/go.mod h1:ZJSfy1PxJv2QQvH9EdBj3nupRTVvV42mkW6zKUlRBwk=
