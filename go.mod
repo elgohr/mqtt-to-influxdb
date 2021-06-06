@@ -3,7 +3,7 @@ module github.com/elgohr/mqtt-to-influxdb
 go 1.15
 
 require (
-	github.com/eclipse/paho.mqtt.golang v1.3.4
+	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/fhmq/hmq v0.0.0-20210531072626-f66abe5fcb2d
 	github.com/go-chi/chi v1.5.1 // indirect
 	github.com/influxdata/influxdb-client-go/v2 v2.4.0
