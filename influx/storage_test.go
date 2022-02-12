@@ -18,8 +18,7 @@ const (
 )
 
 func TestStorage(t *testing.T) {
-	cmd, err := RunInflux()
-	require.NoError(t, err)
+	cmd := RunInflux(t)
 	defer cmd.Process.Kill()
 
 	require.NoError(t, os.Setenv(influx.ServerUrl, "http://localhost:8086"))

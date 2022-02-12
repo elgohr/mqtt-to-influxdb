@@ -50,32 +50,32 @@ func (c *Collector) Collect() <-chan shared.Message {
 	messages := make(chan shared.Message)
 
 	const allMessages = "#"
-	j := map[string]interface{}{}
 	if err := check(c.mqtt.Subscribe(allMessages, 0, func(c paho.Client, m paho.Message) {
+		j := map[string]interface{}{}
 		p := string(m.Payload())
 		if val, err := strconv.Atoi(p); err == nil {
 			messages <- shared.Message{
 				Topic: m.Topic(),
 				Value: val,
-				Time: time.Now(),
+				Time:  time.Now(),
 			}
 		} else if val, err := strconv.ParseFloat(p, 64); err == nil {
 			messages <- shared.Message{
 				Topic: m.Topic(),
 				Value: val,
-				Time: time.Now(),
+				Time:  time.Now(),
 			}
 		} else if err := json.Unmarshal(m.Payload(), &j); err == nil {
 			messages <- shared.Message{
 				Topic: m.Topic(),
 				Value: j,
-				Time: time.Now(),
+				Time:  time.Now(),
 			}
 		} else {
 			messages <- shared.Message{
 				Topic: m.Topic(),
 				Value: p,
-				Time: time.Now(),
+				Time:  time.Now(),
 			}
 		}
 	})); err != nil {

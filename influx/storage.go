@@ -42,12 +42,15 @@ func NewStorage() (*Storage, error) {
 }
 
 func (s *Storage) Write(msg shared.Message) {
-	s.writer.WritePoint(influxdb2.NewPoint(
+	val := msg.Value
+	point := influxdb2.NewPoint(
 		msg.Topic,
 		map[string]string{},
-		map[string]interface{}{"value": msg.Value},
-		msg.Time),
-	)
+		map[string]interface{}{
+			"value": val,
+		},
+		msg.Time)
+	s.writer.WritePoint(point)
 }
 
 func (s *Storage) Shutdown() {
