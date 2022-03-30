@@ -1,12 +1,13 @@
 package influx
 
 import (
+	"context"
 	"github.com/elgohr/mqtt-to-influxdb/shared"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
-	"log"
 	"os"
-	"strconv"
+	"sync"
+	"time"
 )
 
 const (
@@ -14,90 +15,55 @@ const (
 	Token        = "INFLUX_TOKEN"
 	Organization = "INFLUX_ORGANIZATION"
 	Bucket       = "INFLUX_BUCKET"
-
-	RetryInterval = "INFLUX_RETRY_INTERVAL"
-	MaxRetries    = "INFLUX_MAX_RETRIES"
-	BatchSize     = "INFLUX_BATCH_SIZE"
 )
 
 type Storage struct {
 	client influxdb2.Client
-	writer api.WriteAPI
+	writer api.WriteAPIBlocking
+	cache  sync.Map
 }
 
 func NewStorage() (*Storage, error) {
-	serverUrl := GetEnvDefault(ServerUrl, "http://localhost:8086")
+	serverUrl := os.Getenv(ServerUrl)
+	if serverUrl == "" {
+		serverUrl = "http://localhost:8086"
+	}
 	token := os.Getenv(Token)
-
 	org := os.Getenv(Organization)
 	bucket := os.Getenv(Bucket)
 
-	config := loadEnvironmentConfiguration(influxdb2.DefaultOptions())
-	client := influxdb2.NewClientWithOptions(serverUrl, token, config)
-
+	client := influxdb2.NewClientWithOptions(serverUrl, token, influxdb2.DefaultOptions())
 	return &Storage{
 		client: client,
-		writer: client.WriteAPI(org, bucket),
+		writer: client.WriteAPIBlocking(org, bucket),
+		cache:  sync.Map{},
 	}, nil
 }
 
-func (s *Storage) Write(msg shared.Message) {
-	val := msg.Value
-	point := influxdb2.NewPoint(
+func (s *Storage) Write(ctx context.Context, msg shared.Message) {
+	s.cache.Range(func(key, value interface{}) bool {
+		msg := value.(shared.Message)
+		if err := s.write(ctx, msg); err == nil {
+			s.cache.Delete(key)
+		}
+		return true
+	})
+	if err := s.write(ctx, msg); err != nil {
+		s.cache.Store(msg.Hash(), msg)
+		return
+	}
+}
+
+func (s *Storage) write(ctx context.Context, msg shared.Message) error {
+	tCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	return s.writer.WritePoint(tCtx, influxdb2.NewPoint(
 		msg.Topic,
 		map[string]string{},
-		map[string]interface{}{
-			"value": val,
-		},
-		msg.Time)
-	s.writer.WritePoint(point)
+		map[string]interface{}{"value": msg.Value},
+		msg.Time))
 }
 
 func (s *Storage) Shutdown() {
-	s.writer.Flush()
 	s.client.Close()
 }
-
-func GetEnvDefault(key string, def string) string {
-	if val := os.Getenv(key); val != "" {
-		return val
-	}
-	return def
-}
-
-func loadEnvironmentConfiguration(config *influxdb2.Options) *influxdb2.Options {
-	setWhenPresent(config, RetryInterval, func(config *influxdb2.Options, value string) {
-		ui, err := strconv.ParseUint(value, 10, 32)
-		if err != nil {
-			log.Printf("%s : %v \n", RetryInterval, err)
-			return
-		}
-		config.SetRetryInterval(uint(ui))
-	})
-	setWhenPresent(config, MaxRetries, func(config *influxdb2.Options, value string) {
-		ui, err := strconv.ParseUint(value, 10, 32)
-		if err != nil {
-			log.Printf("%s : %v \n", MaxRetries, err)
-			return
-		}
-		config.SetMaxRetries(uint(ui))
-	})
-	setWhenPresent(config, BatchSize, func(config *influxdb2.Options, value string) {
-		ui, err := strconv.ParseUint(value, 10, 32)
-		if err != nil {
-			log.Printf("%s : %v \n", BatchSize, err)
-			return
-		}
-		config.SetBatchSize(uint(ui))
-	})
-	return config
-}
-
-func setWhenPresent(config *influxdb2.Options, key string, changer envConfigChanger) {
-	val := os.Getenv(key)
-	if val != "" {
-		changer(config, val)
-	}
-}
-
-type envConfigChanger func(config *influxdb2.Options, value string)

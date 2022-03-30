@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/elgohr/mqtt-to-influxdb/influx"
 	"github.com/elgohr/mqtt-to-influxdb/mqtt"
 	"log"
@@ -9,8 +10,7 @@ import (
 )
 
 func main() {
-	q := make(chan os.Signal)
-	signal.Notify(q, os.Kill, os.Interrupt)
+	ctx, _ := signal.NotifyContext(context.Background(), os.Kill, os.Interrupt)
 
 	col, err := mqtt.NewCollector()
 	if err != nil {
@@ -23,13 +23,12 @@ func main() {
 	}
 
 	c := col.Collect()
-
 	for {
 		select {
 		case msg := <-c:
 			log.Println(msg)
-			sto.Write(msg)
-		case <-q:
+			sto.Write(ctx, msg)
+		case <-ctx.Done():
 			log.Println("exiting")
 			col.Shutdown()
 			sto.Shutdown()
