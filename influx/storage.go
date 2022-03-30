@@ -41,6 +41,10 @@ func NewStorage() (*Storage, error) {
 }
 
 func (s *Storage) Write(ctx context.Context, msg shared.Message) {
+	if err := s.write(ctx, msg); err != nil {
+		s.cache.Store(msg.Hash(), msg)
+		return
+	}
 	s.cache.Range(func(key, value interface{}) bool {
 		msg := value.(shared.Message)
 		if err := s.write(ctx, msg); err == nil {
@@ -48,10 +52,6 @@ func (s *Storage) Write(ctx context.Context, msg shared.Message) {
 		}
 		return true
 	})
-	if err := s.write(ctx, msg); err != nil {
-		s.cache.Store(msg.Hash(), msg)
-		return
-	}
 }
 
 func (s *Storage) write(ctx context.Context, msg shared.Message) error {

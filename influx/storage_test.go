@@ -175,9 +175,9 @@ func TestStorageWithRestartedStorage(t *testing.T) {
 	require.Equal(t, topic, records[0].measurement)
 	require.Equal(t, "test-string", fmt.Sprintf("%v", records[0].value))
 	require.Equal(t, topic, records[1].measurement)
-	require.Equal(t, "test-string2", fmt.Sprintf("%v", records[1].value))
+	require.Equal(t, "test-string3", fmt.Sprintf("%v", records[1].value))
 	require.Equal(t, topic, records[2].measurement)
-	require.Equal(t, "test-string3", fmt.Sprintf("%v", records[2].value))
+	require.Equal(t, "test-string2", fmt.Sprintf("%v", records[2].value))
 }
 
 type testRecord struct {
