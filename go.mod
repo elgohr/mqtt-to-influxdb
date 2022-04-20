@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/fhmq/hmq v0.0.0-20211208101315-8d486c3a208f
-	github.com/influxdata/influxdb-client-go/v2 v2.8.1
+	github.com/influxdata/influxdb-client-go/v2 v2.8.2
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.7.1
 )
@@ -46,7 +46,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/segmentio/fasthash v1.0.3 // indirect
-	github.com/stretchr/objx v0.1.0 // indirect
 	github.com/tidwall/gjson v1.12.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect

@@ -70,7 +70,7 @@ github.com/gorilla/websocket
 # github.com/hashicorp/go-uuid v1.0.2
 ## explicit
 github.com/hashicorp/go-uuid
-# github.com/influxdata/influxdb-client-go/v2 v2.8.1
+# github.com/influxdata/influxdb-client-go/v2 v2.8.2
 ## explicit; go 1.17
 github.com/influxdata/influxdb-client-go/v2
 github.com/influxdata/influxdb-client-go/v2/api
@@ -177,8 +177,6 @@ github.com/satori/go.uuid
 # github.com/segmentio/fasthash v1.0.3
 ## explicit; go 1.11
 github.com/segmentio/fasthash/fnv1a
-# github.com/stretchr/objx v0.1.0
-## explicit
 # github.com/stretchr/testify v1.7.1
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
