@@ -70,7 +70,7 @@ github.com/gorilla/websocket
 # github.com/hashicorp/go-uuid v1.0.2
 ## explicit
 github.com/hashicorp/go-uuid
-# github.com/influxdata/influxdb-client-go/v2 v2.8.2
+# github.com/influxdata/influxdb-client-go/v2 v2.9.0
 ## explicit; go 1.17
 github.com/influxdata/influxdb-client-go/v2
 github.com/influxdata/influxdb-client-go/v2/api
