@@ -3,7 +3,7 @@ module github.com/elgohr/mqtt-to-influxdb
 go 1.18
 
 require (
-	github.com/eclipse/paho.mqtt.golang v1.3.5
+	github.com/eclipse/paho.mqtt.golang v1.4.1
 	github.com/fhmq/hmq v0.0.0-20211208101315-8d486c3a208f
 	github.com/influxdata/influxdb-client-go/v2 v2.9.0
 	github.com/satori/go.uuid v1.2.0
@@ -55,6 +55,7 @@ require (
 	go.uber.org/zap v1.19.1 // indirect
 	golang.org/x/crypto v0.0.0-20211209193657-4570a0811e8b // indirect
 	golang.org/x/net v0.0.0-20220325170049-de3da57026de // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
