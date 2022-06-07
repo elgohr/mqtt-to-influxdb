@@ -7,7 +7,7 @@ require (
 	github.com/fhmq/hmq v0.0.0-20211208101315-8d486c3a208f
 	github.com/influxdata/influxdb-client-go/v2 v2.9.0
 	github.com/satori/go.uuid v1.2.0
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.2
 )
 
 require (
@@ -59,5 +59,5 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
