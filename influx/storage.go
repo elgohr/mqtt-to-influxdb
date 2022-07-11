@@ -2,6 +2,7 @@ package influx
 
 import (
 	"context"
+	"fmt"
 	"github.com/elgohr/mqtt-to-influxdb/shared"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
@@ -18,9 +19,10 @@ const (
 )
 
 type Storage struct {
-	client influxdb2.Client
-	writer api.WriteAPIBlocking
-	cache  sync.Map
+	client         influxdb2.Client
+	writer         api.WriteAPIBlocking
+	cache          sync.Map
+	lastValueCache sync.Map
 }
 
 func NewStorage() (*Storage, error) {
@@ -34,17 +36,22 @@ func NewStorage() (*Storage, error) {
 
 	client := influxdb2.NewClientWithOptions(serverUrl, token, influxdb2.DefaultOptions())
 	return &Storage{
-		client: client,
-		writer: client.WriteAPIBlocking(org, bucket),
-		cache:  sync.Map{},
+		client:         client,
+		writer:         client.WriteAPIBlocking(org, bucket),
+		cache:          sync.Map{},
+		lastValueCache: sync.Map{},
 	}, nil
 }
 
 func (s *Storage) Write(ctx context.Context, msg shared.Message) {
+	if val, exists := s.lastValueCache.Load(msg.Topic); exists && val.(string) == fmt.Sprintf("%v", msg.Value) {
+		return
+	}
 	if err := s.write(ctx, msg); err != nil {
 		s.cache.Store(msg.Hash(), msg)
 		return
 	}
+	s.lastValueCache.Store(msg.Topic, fmt.Sprintf("%v", msg.Value))
 	s.cache.Range(func(key, value interface{}) bool {
 		msg := value.(shared.Message)
 		if err := s.write(ctx, msg); err == nil {

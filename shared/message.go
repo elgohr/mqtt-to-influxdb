@@ -7,7 +7,7 @@ import (
 
 type Message struct {
 	Topic string
-	Value interface{}
+	Value any
 	Time  time.Time
 }
 
