@@ -66,7 +66,7 @@ func (s *Storage) write(ctx context.Context, msg shared.Message) error {
 	defer cancel()
 	return s.writer.WritePoint(tCtx, influxdb2.NewPoint(
 		msg.Topic,
-		map[string]string{},
+		map[string]string{"topic": msg.Topic},
 		map[string]interface{}{"value": msg.Value},
 		msg.Time))
 }
