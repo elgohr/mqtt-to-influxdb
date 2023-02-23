@@ -20,7 +20,7 @@ github.com/eapache/go-xerial-snappy
 # github.com/eapache/queue v1.1.0
 ## explicit
 github.com/eapache/queue
-# github.com/eclipse/paho.mqtt.golang v1.4.1
+# github.com/eclipse/paho.mqtt.golang v1.4.2
 ## explicit; go 1.14
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
