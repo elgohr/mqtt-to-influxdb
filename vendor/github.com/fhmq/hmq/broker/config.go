@@ -3,7 +3,6 @@ package broker
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -13,8 +12,11 @@ import (
 	"github.com/fhmq/hmq/logger"
 	"github.com/fhmq/hmq/plugins/auth"
 	"github.com/fhmq/hmq/plugins/bridge"
+	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type Config struct {
 	Worker   int       `json:"workerNum"`
@@ -159,7 +161,6 @@ func LoadConfig(filename string) (*Config, error) {
 	return &config, nil
 }
 
-
 func (p *Plugins) UnmarshalJSON(b []byte) error {
 	var named NamedPlugins
 	err := json.Unmarshal(b, &named)
@@ -235,7 +236,7 @@ func NewTLSConfig(tlsInfo TLSInfo) (*tls.Config, error) {
 			return nil, err
 		}
 		pool := x509.NewCertPool()
-		ok := pool.AppendCertsFromPEM([]byte(rootPEM))
+		ok := pool.AppendCertsFromPEM(rootPEM)
 		if !ok {
 			return nil, fmt.Errorf("failed to parse root ca certificate")
 		}

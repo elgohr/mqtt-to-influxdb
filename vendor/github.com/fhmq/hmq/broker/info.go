@@ -15,7 +15,7 @@ func (c *client) SendInfo() {
 	}
 	url := c.info.localIP + ":" + c.broker.config.Cluster.Port
 
-	infoMsg := NewInfo(c.broker.id, url, false)
+	infoMsg := NewInfo(c.broker.id, url)
 	err := c.WriterPacket(infoMsg)
 	if err != nil {
 		log.Error("send info message error, ", zap.Error(err))
@@ -60,13 +60,12 @@ func (c *client) SendConnect() {
 	log.Info("send connect success")
 }
 
-func NewInfo(sid, url string, isforword bool) *packets.PublishPacket {
+func NewInfo(sid, url string) *packets.PublishPacket {
 	pub := packets.NewControlPacket(packets.Publish).(*packets.PublishPacket)
 	pub.Qos = 0
 	pub.TopicName = BrokerInfoTopic
 	pub.Retain = false
 	info := fmt.Sprintf(`{"brokerID":"%s","brokerUrl":"%s"}`, sid, url)
-	// log.Info("new info", string(info))
 	pub.Payload = []byte(info)
 	return pub
 }

@@ -38,6 +38,9 @@ type Config struct {
 	Net struct {
 		// How many outstanding requests a connection is allowed to have before
 		// sending on it blocks (default 5).
+		// Throughput can improve but message ordering is not guaranteed if Producer.Idempotent is disabled, see:
+		// https://kafka.apache.org/protocol#protocol_network
+		// https://kafka.apache.org/28/documentation.html#producerconfigs_max.in.flight.requests.per.connection
 		MaxOpenRequests int
 
 		// All three of the below configurations are similar to the
@@ -293,6 +296,8 @@ type Config struct {
 				// coordinator for the group.
 				UserData []byte
 			}
+			// support KIP-345
+			InstanceId string
 		}
 
 		Retry struct {
@@ -480,7 +485,7 @@ func NewConfig() *Config {
 	c.Consumer.Fetch.Min = 1
 	c.Consumer.Fetch.Default = 1024 * 1024
 	c.Consumer.Retry.Backoff = 2 * time.Second
-	c.Consumer.MaxWaitTime = 250 * time.Millisecond
+	c.Consumer.MaxWaitTime = 500 * time.Millisecond
 	c.Consumer.MaxProcessingTime = 100 * time.Millisecond
 	c.Consumer.Return.Errors = false
 	c.Consumer.Offsets.AutoCommit.Enable = true
@@ -506,6 +511,7 @@ func NewConfig() *Config {
 
 // Validate checks a Config instance. It will return a
 // ConfigurationError if the specified values don't make sense.
+//nolint:gocyclo // This function's cyclomatic complexity has go beyond 100
 func (c *Config) Validate() error {
 	// some configuration values should be warned on but not fail completely, do those first
 	if !c.Net.TLS.Enable && c.Net.TLS.Config != nil {
@@ -751,6 +757,14 @@ func (c *Config) Validate() error {
 	case c.Consumer.Group.Rebalance.Retry.Backoff < 0:
 		return ConfigurationError("Consumer.Group.Rebalance.Retry.Backoff must be >= 0")
 	}
+	if c.Consumer.Group.InstanceId != "" {
+		if !c.Version.IsAtLeast(V2_3_0_0) {
+			return ConfigurationError("Consumer.Group.InstanceId need Version >= 2.3")
+		}
+		if err := validateGroupInstanceId(c.Consumer.Group.InstanceId); err != nil {
+			return err
+		}
+	}
 
 	// validate misc shared values
 	switch {
@@ -774,4 +788,24 @@ func (c *Config) getDialer() proxy.Dialer {
 			LocalAddr: c.Net.LocalAddr,
 		}
 	}
+}
+
+const MAX_GROUP_INSTANCE_ID_LENGTH = 249
+
+var GROUP_INSTANCE_ID_REGEXP = regexp.MustCompile(`^[0-9a-zA-Z\._\-]+$`)
+
+func validateGroupInstanceId(id string) error {
+	if id == "" {
+		return ConfigurationError("Group instance id must be non-empty string")
+	}
+	if id == "." || id == ".." {
+		return ConfigurationError(`Group instance id cannot be "." or ".."`)
+	}
+	if len(id) > MAX_GROUP_INSTANCE_ID_LENGTH {
+		return ConfigurationError(fmt.Sprintf(`Group instance id cannot be longer than %v, characters: %s`, MAX_GROUP_INSTANCE_ID_LENGTH, id))
+	}
+	if !GROUP_INSTANCE_ID_REGEXP.MatchString(id) {
+		return ConfigurationError(fmt.Sprintf(`Group instance id %s is illegal, it contains a character other than, '.', '_' and '-'`, id))
+	}
+	return nil
 }

@@ -1,11 +1,10 @@
 package broker
 
 import (
-	"encoding/json"
 	"reflect"
 	"time"
 
-	"github.com/tidwall/gjson"
+	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
 
 	"github.com/eclipse/paho.mqtt.golang/packets"
@@ -134,24 +133,13 @@ func wrapPublishPacket(packet *packets.PublishPacket) *packets.PublishPacket {
 
 func unWrapPublishPacket(packet *packets.PublishPacket) *packets.PublishPacket {
 	p := packet.Copy()
-	if gjson.GetBytes(p.Payload, "payload").Exists() {
-		p.Payload = []byte(gjson.GetBytes(p.Payload, "payload").String())
+	if payload := jsoniter.Get(p.Payload, "payload").ToString(); payload != "" {
+		p.Payload = []byte(payload)
 	}
 	return p
 }
 
 func publish(sub *subscription, packet *packets.PublishPacket) {
-	// var p *packets.PublishPacket
-	// if sub.client.info.username != "root" {
-	// 	p = unWrapPublishPacket(packet)
-	// } else {
-	// 	p = wrapPublishPacket(packet)
-	// }
-	// err := sub.client.WriterPacket(p)
-	// if err != nil {
-	// 	log.Error("process message for psub error,  ", zap.Error(err))
-	// }
-
 	switch packet.Qos {
 	case QosAtMostOnce:
 		err := sub.client.WriterPacket(packet)
@@ -175,9 +163,14 @@ func publish(sub *subscription, packet *packets.PublishPacket) {
 
 // timer for retry delivery
 func (c *client) ensureRetryTimer(interval ...int64) {
+
+	c.retryTimerLock.Lock()
+	defer c.retryTimerLock.Unlock()
+
 	if c.retryTimer != nil {
 		return
 	}
+
 	if len(interval) > 1 {
 		return
 	}
@@ -185,29 +178,33 @@ func (c *client) ensureRetryTimer(interval ...int64) {
 	if len(interval) == 1 {
 		timerInterval = interval[0]
 	}
-	c.retryTimerLock.Lock()
+
 	c.retryTimer = time.AfterFunc(time.Duration(timerInterval)*time.Second, c.retryDelivery)
-	c.retryTimerLock.Unlock()
+
 	return
 }
 
 func (c *client) resetRetryTimer() {
+	// lock mutex before reading retryTimer
+	c.retryTimerLock.Lock()
+	defer c.retryTimerLock.Unlock()
+
 	if c.retryTimer == nil {
 		return
 	}
-	// reset timer
-	c.retryTimerLock.Lock()
-	c.retryTimer = nil
-	c.retryTimerLock.Unlock()
 
+	// reset timer
+	c.retryTimer = nil
 }
 
 func (c *client) retryDelivery() {
 	c.resetRetryTimer()
 	c.inflightMu.RLock()
 	ilen := len(c.inflight)
-	if c.conn == nil || ilen == 0 { //Reset timer when client offline OR inflight is empty
+
+	if c.mu.Lock(); c.conn == nil || ilen == 0 { //Reset timer when client offline OR inflight is empty
 		c.inflightMu.RUnlock()
+		c.mu.Unlock()
 		return
 	}
 
