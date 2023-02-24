@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type kafakConfig struct {
+type kafkaConfig struct {
 	Addr             []string          `json:"addr"`
 	ConnectTopic     string            `json:"onConnect"`
 	SubscribeTopic   string            `json:"onSubscribe"`
@@ -22,11 +22,11 @@ type kafakConfig struct {
 }
 
 type kafka struct {
-	kafakConfig kafakConfig
+	kafkaConfig kafkaConfig
 	kafkaClient sarama.AsyncProducer
 }
 
-//Init init kafak client
+// InitKafka Init kafka client
 func InitKafka() *kafka {
 	log.Info("start connect kafka....")
 	content, err := ioutil.ReadFile("./plugins/kafka/kafka.json")
@@ -34,12 +34,12 @@ func InitKafka() *kafka {
 		log.Fatal("Read config file error: ", zap.Error(err))
 	}
 	// log.Info(string(content))
-	var config kafakConfig
+	var config kafkaConfig
 	err = json.Unmarshal(content, &config)
 	if err != nil {
 		log.Fatal("Unmarshal config file error: ", zap.Error(err))
 	}
-	c := &kafka{kafakConfig: config}
+	c := &kafka{kafkaConfig: config}
 	c.connect()
 	return c
 }
@@ -48,7 +48,7 @@ func InitKafka() *kafka {
 func (k *kafka) connect() {
 	conf := sarama.NewConfig()
 	conf.Version = sarama.V1_1_1_0
-	kafkaClient, err := sarama.NewAsyncProducer(k.kafakConfig.Addr, conf)
+	kafkaClient, err := sarama.NewAsyncProducer(k.kafkaConfig.Addr, conf)
 	if err != nil {
 		log.Fatal("create kafka async producer failed: ", zap.Error(err))
 	}
@@ -63,8 +63,8 @@ func (k *kafka) connect() {
 }
 
 //Publish publish to kafka
-func (k *kafka) Publish(e *Elements) error {
-	config := k.kafakConfig
+func (k *kafka) Publish(e *Elements) (bool, error) {
+	config := k.kafkaConfig
 	key := e.ClientID
 	topics := make(map[string]bool)
 	switch e.Action {
@@ -96,10 +96,10 @@ func (k *kafka) Publish(e *Elements) error {
 			topics[config.DisconnectTopic] = true
 		}
 	default:
-		return errors.New("error action: " + e.Action)
+		return false, errors.New("error action: " + e.Action)
 	}
 
-	return k.publish(topics, key, e)
+	return false, k.publish(topics, key, e)
 
 }
 

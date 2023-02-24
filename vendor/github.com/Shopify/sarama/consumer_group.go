@@ -54,16 +54,37 @@ type ConsumerGroup interface {
 	// Close stops the ConsumerGroup and detaches any running sessions. It is required to call
 	// this function before the object passes out of scope, as it will otherwise leak memory.
 	Close() error
+
+	// Pause suspends fetching from the requested partitions. Future calls to the broker will not return any
+	// records from these partitions until they have been resumed using Resume()/ResumeAll().
+	// Note that this method does not affect partition subscription.
+	// In particular, it does not cause a group rebalance when automatic assignment is used.
+	Pause(partitions map[string][]int32)
+
+	// Resume resumes specified partitions which have been paused with Pause()/PauseAll().
+	// New calls to the broker will return records from these partitions if there are any to be fetched.
+	Resume(partitions map[string][]int32)
+
+	// Pause suspends fetching from all partitions. Future calls to the broker will not return any
+	// records from these partitions until they have been resumed using Resume()/ResumeAll().
+	// Note that this method does not affect partition subscription.
+	// In particular, it does not cause a group rebalance when automatic assignment is used.
+	PauseAll()
+
+	// Resume resumes all partitions which have been paused with Pause()/PauseAll().
+	// New calls to the broker will return records from these partitions if there are any to be fetched.
+	ResumeAll()
 }
 
 type consumerGroup struct {
 	client Client
 
-	config   *Config
-	consumer Consumer
-	groupID  string
-	memberID string
-	errors   chan error
+	config          *Config
+	consumer        Consumer
+	groupID         string
+	groupInstanceId *string
+	memberID        string
+	errors          chan error
 
 	lock      sync.Mutex
 	closed    chan none
@@ -107,7 +128,7 @@ func newConsumerGroup(groupID string, client Client) (ConsumerGroup, error) {
 		return nil, err
 	}
 
-	return &consumerGroup{
+	cg := &consumerGroup{
 		client:   client,
 		consumer: consumer,
 		config:   config,
@@ -115,7 +136,11 @@ func newConsumerGroup(groupID string, client Client) (ConsumerGroup, error) {
 		errors:   make(chan error, config.ChannelBufferSize),
 		closed:   make(chan none),
 		userData: config.Consumer.Group.Member.UserData,
-	}, nil
+	}
+	if client.Config().Consumer.Group.InstanceId != "" && config.Version.IsAtLeast(V2_3_0_0) {
+		cg.groupInstanceId = &client.Config().Consumer.Group.InstanceId
+	}
+	return cg, nil
 }
 
 // Errors implements ConsumerGroup.
@@ -170,7 +195,7 @@ func (c *consumerGroup) Consume(ctx context.Context, topics []string, handler Co
 
 	// Init session
 	sess, err := c.newSession(ctx, topics, handler, c.config.Consumer.Group.Rebalance.Retry.Max)
-	if err == ErrClosedClient {
+	if errors.Is(err, ErrClosedClient) {
 		return ErrClosedConsumerGroup
 	} else if err != nil {
 		return err
@@ -186,6 +211,26 @@ func (c *consumerGroup) Consume(ctx context.Context, topics []string, handler Co
 
 	// Gracefully release session claims
 	return sess.release(true)
+}
+
+// Pause implements ConsumerGroup.
+func (c *consumerGroup) Pause(partitions map[string][]int32) {
+	c.consumer.Pause(partitions)
+}
+
+// Resume implements ConsumerGroup.
+func (c *consumerGroup) Resume(partitions map[string][]int32) {
+	c.consumer.Resume(partitions)
+}
+
+// PauseAll implements ConsumerGroup.
+func (c *consumerGroup) PauseAll() {
+	c.consumer.PauseAll()
+}
+
+// ResumeAll implements ConsumerGroup.
+func (c *consumerGroup) ResumeAll() {
+	c.consumer.ResumeAll()
 }
 
 func (c *consumerGroup) retryNewSession(ctx context.Context, topics []string, handler ConsumerGroupHandler, retries int, refreshCoordinator bool) (*consumerGroupSession, error) {
@@ -242,7 +287,7 @@ func (c *consumerGroup) newSession(ctx context.Context, topics []string, handler
 		}
 		return nil, err
 	}
-	if join.Err != ErrNoError {
+	if !errors.Is(join.Err, ErrNoError) {
 		if consumerGroupJoinFailed != nil {
 			consumerGroupJoinFailed.Inc(1)
 		}
@@ -250,21 +295,26 @@ func (c *consumerGroup) newSession(ctx context.Context, topics []string, handler
 	switch join.Err {
 	case ErrNoError:
 		c.memberID = join.MemberId
-	case ErrUnknownMemberId, ErrIllegalGeneration: // reset member ID and retry immediately
+	case ErrUnknownMemberId, ErrIllegalGeneration:
+		// reset member ID and retry immediately
 		c.memberID = ""
 		return c.newSession(ctx, topics, handler, retries)
-	case ErrNotCoordinatorForConsumer: // retry after backoff with coordinator refresh
+	case ErrNotCoordinatorForConsumer, ErrRebalanceInProgress, ErrOffsetsLoadInProgress:
+		// retry after backoff
 		if retries <= 0 {
 			return nil, join.Err
 		}
-
 		return c.retryNewSession(ctx, topics, handler, retries, true)
-	case ErrRebalanceInProgress: // retry after backoff
-		if retries <= 0 {
-			return nil, join.Err
+	case ErrMemberIdRequired:
+		// from JoinGroupRequest v4, if client start with empty member id,
+		// it need to get member id from response and send another join request to join group
+		c.memberID = join.MemberId
+		return c.retryNewSession(ctx, topics, handler, retries+1 /*keep retry time*/, false)
+	case ErrFencedInstancedId:
+		if c.groupInstanceId != nil {
+			Logger.Printf("JoinGroup failed: group instance id %s has been fenced\n", *c.groupInstanceId)
 		}
-
-		return c.retryNewSession(ctx, topics, handler, retries, false)
+		return nil, join.Err
 	default:
 		return nil, join.Err
 	}
@@ -295,7 +345,7 @@ func (c *consumerGroup) newSession(ctx context.Context, topics []string, handler
 		}
 		return nil, err
 	}
-	if groupRequest.Err != ErrNoError {
+	if !errors.Is(groupRequest.Err, ErrNoError) {
 		if consumerGroupSyncFailed != nil {
 			consumerGroupSyncFailed.Inc(1)
 		}
@@ -303,21 +353,21 @@ func (c *consumerGroup) newSession(ctx context.Context, topics []string, handler
 
 	switch groupRequest.Err {
 	case ErrNoError:
-	case ErrUnknownMemberId, ErrIllegalGeneration: // reset member ID and retry immediately
+	case ErrUnknownMemberId, ErrIllegalGeneration:
+		// reset member ID and retry immediately
 		c.memberID = ""
 		return c.newSession(ctx, topics, handler, retries)
-	case ErrNotCoordinatorForConsumer: // retry after backoff with coordinator refresh
+	case ErrNotCoordinatorForConsumer, ErrRebalanceInProgress, ErrOffsetsLoadInProgress:
+		// retry after backoff
 		if retries <= 0 {
 			return nil, groupRequest.Err
 		}
-
 		return c.retryNewSession(ctx, topics, handler, retries, true)
-	case ErrRebalanceInProgress: // retry after backoff
-		if retries <= 0 {
-			return nil, groupRequest.Err
+	case ErrFencedInstancedId:
+		if c.groupInstanceId != nil {
+			Logger.Printf("JoinGroup failed: group instance id %s has been fenced\n", *c.groupInstanceId)
 		}
-
-		return c.retryNewSession(ctx, topics, handler, retries, false)
+		return nil, groupRequest.Err
 	default:
 		return nil, groupRequest.Err
 	}
@@ -359,6 +409,10 @@ func (c *consumerGroup) joinGroupRequest(coordinator *Broker, topics []string) (
 		req.Version = 1
 		req.RebalanceTimeout = int32(c.config.Consumer.Group.Rebalance.Timeout / time.Millisecond)
 	}
+	if c.groupInstanceId != nil {
+		req.Version = 5
+		req.GroupInstanceId = c.groupInstanceId
+	}
 
 	meta := &ConsumerGroupMemberMetadata{
 		Topics:   topics,
@@ -379,6 +433,10 @@ func (c *consumerGroup) syncGroupRequest(coordinator *Broker, plan BalanceStrate
 		GenerationId: generationID,
 	}
 	strategy := c.config.Consumer.Group.Rebalance.Strategy
+	if c.groupInstanceId != nil {
+		req.Version = 3
+		req.GroupInstanceId = c.groupInstanceId
+	}
 	for memberID, topics := range plan {
 		assignment := &ConsumerGroupMemberAssignment{Topics: topics}
 		userDataBytes, err := strategy.AssignmentData(memberID, topics, generationID)
@@ -398,6 +456,10 @@ func (c *consumerGroup) heartbeatRequest(coordinator *Broker, memberID string, g
 		GroupId:      c.groupID,
 		MemberId:     memberID,
 		GenerationId: generationID,
+	}
+	if c.groupInstanceId != nil {
+		req.Version = 3
+		req.GroupInstanceId = c.groupInstanceId
 	}
 
 	return coordinator.Heartbeat(req)
@@ -436,29 +498,37 @@ func (c *consumerGroup) leave() error {
 		return err
 	}
 
-	resp, err := coordinator.LeaveGroup(&LeaveGroupRequest{
-		GroupId:  c.groupID,
-		MemberId: c.memberID,
-	})
-	if err != nil {
-		_ = coordinator.Close()
-		return err
-	}
+	// KIP-345 if groupInstanceId is set, don not leave group when consumer closed.
+	// Since we do not discover ApiVersion for brokers, LeaveGroupRequest still use the old version request for now
+	if c.groupInstanceId == nil {
+		resp, err := coordinator.LeaveGroup(&LeaveGroupRequest{
+			GroupId:  c.groupID,
+			MemberId: c.memberID,
+		})
+		if err != nil {
+			_ = coordinator.Close()
+			return err
+		}
 
-	// Unset memberID
-	c.memberID = ""
+		// Unset memberID
+		c.memberID = ""
 
-	// Check response
-	switch resp.Err {
-	case ErrRebalanceInProgress, ErrUnknownMemberId, ErrNoError:
-		return nil
-	default:
-		return resp.Err
+		// Check response
+		switch resp.Err {
+		case ErrRebalanceInProgress, ErrUnknownMemberId, ErrNoError:
+			return nil
+		default:
+			return resp.Err
+		}
+	} else {
+		c.memberID = ""
 	}
+	return nil
 }
 
 func (c *consumerGroup) handleError(err error, topic string, partition int32) {
-	if _, ok := err.(*ConsumerError); !ok && topic != "" && partition > -1 {
+	var consumerError *ConsumerError
+	if ok := errors.As(err, &consumerError); !ok && topic != "" && partition > -1 {
 		err = &ConsumerError{
 			Topic:     topic,
 			Partition: partition,
@@ -507,7 +577,9 @@ func (c *consumerGroup) loopCheckPartitionNumbers(topics []string, session *cons
 		select {
 		case <-pause.C:
 		case <-session.ctx.Done():
-			Logger.Printf("loop check partition number coroutine will exit, topics %s", topics)
+			Logger.Printf(
+				"consumergroup/%s loop check partition number coroutine will exit, topics %s\n",
+				c.groupID, topics)
 			// if session closed by other, should be exited
 			return
 		case <-c.closed:
@@ -520,7 +592,9 @@ func (c *consumerGroup) topicToPartitionNumbers(topics []string) (map[string]int
 	topicToPartitionNum := make(map[string]int, len(topics))
 	for _, topic := range topics {
 		if partitionNum, err := c.client.Partitions(topic); err != nil {
-			Logger.Printf("Consumer Group topic %s get partition number failed %v", topic, err)
+			Logger.Printf(
+				"consumergroup/%s topic %s get partition number failed due to '%v'\n",
+				c.groupID, topic, err)
 			return nil, err
 		} else {
 			topicToPartitionNum[topic] = len(partitionNum)
@@ -593,14 +667,14 @@ type consumerGroupSession struct {
 }
 
 func newConsumerGroupSession(ctx context.Context, parent *consumerGroup, claims map[string][]int32, memberID string, generationID int32, handler ConsumerGroupHandler) (*consumerGroupSession, error) {
+	// init context
+	ctx, cancel := context.WithCancel(ctx)
+
 	// init offset manager
-	offsets, err := newOffsetManagerFromClient(parent.groupID, memberID, generationID, parent.client)
+	offsets, err := newOffsetManagerFromClient(parent.groupID, memberID, generationID, parent.client, cancel)
 	if err != nil {
 		return nil, err
 	}
-
-	// init context
-	ctx, cancel := context.WithCancel(ctx)
 
 	// init session
 	sess := &consumerGroupSession{
@@ -766,12 +840,21 @@ func (s *consumerGroupSession) release(withCleanup bool) (err error) {
 		<-s.hbDead
 	})
 
+	Logger.Printf(
+		"consumergroup/session/%s/%d released\n",
+		s.MemberID(), s.GenerationID())
+
 	return
 }
 
 func (s *consumerGroupSession) heartbeatLoop() {
 	defer close(s.hbDead)
 	defer s.cancel() // trigger the end of the session on exit
+	defer func() {
+		Logger.Printf(
+			"consumergroup/session/%s/%d heartbeat loop stopped\n",
+			s.MemberID(), s.GenerationID())
+	}()
 
 	pause := time.NewTicker(s.parent.config.Consumer.Group.Heartbeat.Interval)
 	defer pause.Stop()
@@ -813,7 +896,16 @@ func (s *consumerGroupSession) heartbeatLoop() {
 		switch resp.Err {
 		case ErrNoError:
 			retries = s.parent.config.Metadata.Retry.Max
-		case ErrRebalanceInProgress, ErrUnknownMemberId, ErrIllegalGeneration:
+		case ErrRebalanceInProgress:
+			retries = s.parent.config.Metadata.Retry.Max
+			s.cancel()
+		case ErrUnknownMemberId, ErrIllegalGeneration:
+			return
+		case ErrFencedInstancedId:
+			if s.parent.groupInstanceId != nil {
+				Logger.Printf("JoinGroup failed: group instance id %s has been fenced\n", *s.parent.groupInstanceId)
+			}
+			s.parent.handleError(resp.Err, "", -1)
 			return
 		default:
 			s.parent.handleError(resp.Err, "", -1)
@@ -883,7 +975,7 @@ type consumerGroupClaim struct {
 
 func newConsumerGroupClaim(sess *consumerGroupSession, topic string, partition int32, offset int64) (*consumerGroupClaim, error) {
 	pcm, err := sess.parent.consumer.ConsumePartition(topic, partition, offset)
-	if err == ErrOffsetOutOfRange {
+	if errors.Is(err, ErrOffsetOutOfRange) {
 		offset = sess.parent.config.Consumer.Offsets.Initial
 		pcm, err = sess.parent.consumer.ConsumePartition(topic, partition, offset)
 	}

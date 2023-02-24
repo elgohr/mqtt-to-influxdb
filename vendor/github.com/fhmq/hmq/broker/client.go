@@ -14,18 +14,16 @@ import (
 	"unicode/utf8"
 
 	"github.com/eapache/queue"
-
+	"github.com/eclipse/paho.mqtt.golang/packets"
 	"github.com/fhmq/hmq/broker/lib/sessions"
 	"github.com/fhmq/hmq/broker/lib/topics"
 	"github.com/fhmq/hmq/plugins/bridge"
-	"golang.org/x/net/websocket"
-
-	"github.com/eclipse/paho.mqtt.golang/packets"
 	"go.uber.org/zap"
+	"golang.org/x/net/websocket"
 )
 
 const (
-	// special pub topic for cluster info BrokerInfoTopic
+	// BrokerInfoTopic special pub topic for cluster info
 	BrokerInfoTopic = "broker000100101info"
 	// CLIENT is an end user.
 	CLIENT = 0
@@ -250,7 +248,7 @@ func validatePacketFields(msgPacket packets.ControlPacket) (validFields bool) {
 		}
 	}
 
-	// All fields has been validated successfully
+	// All fields have been validated successfully
 	validFields = true
 
 	return
@@ -415,8 +413,8 @@ func (c *client) processClientPublish(packet *packets.PublishPacket) {
 		return
 	}
 
-	//publish kafka
-	c.broker.Publish(&bridge.Elements{
+	//publish to bridge mq
+	cost := c.broker.Publish(&bridge.Elements{
 		ClientID:  c.info.clientID,
 		Username:  c.info.username,
 		Action:    bridge.Publish,
@@ -424,6 +422,10 @@ func (c *client) processClientPublish(packet *packets.PublishPacket) {
 		Payload:   string(packet.Payload),
 		Topic:     topic,
 	})
+
+	if cost {
+		return
+	}
 
 	switch packet.Qos {
 	case QosAtMostOnce:
@@ -476,7 +478,6 @@ func (c *client) ProcessPublishMessage(packet *packets.PublishPacket) {
 		return
 	}
 
-	// fmt.Println("psubs num: ", len(c.subs))
 	if len(c.subs) == 0 {
 		return
 	}
@@ -810,9 +811,10 @@ func (c *client) Close() {
 		Timestamp: time.Now().Unix(),
 	})
 
-	if c.conn != nil {
+	if c.mu.Lock(); c.conn != nil {
 		_ = c.conn.Close()
 		c.conn = nil
+		c.mu.Unlock()
 	}
 
 	if b == nil {
