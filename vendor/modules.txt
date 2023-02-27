@@ -87,7 +87,7 @@ github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-uuid v1.0.3
 ## explicit
 github.com/hashicorp/go-uuid
-# github.com/influxdata/influxdb-client-go/v2 v2.9.2
+# github.com/influxdata/influxdb-client-go/v2 v2.12.2
 ## explicit; go 1.17
 github.com/influxdata/influxdb-client-go/v2
 github.com/influxdata/influxdb-client-go/v2/api

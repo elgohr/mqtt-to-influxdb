@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/fhmq/hmq v1.5.0
-	github.com/influxdata/influxdb-client-go/v2 v2.9.2
+	github.com/influxdata/influxdb-client-go/v2 v2.12.2
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.8.2
 )
