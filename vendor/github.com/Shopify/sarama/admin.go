@@ -280,17 +280,7 @@ func (ca *clusterAdmin) DescribeTopics(topics []string) (metadata []*TopicMetada
 		return nil, err
 	}
 
-	request := &MetadataRequest{
-		Topics:                 topics,
-		AllowAutoTopicCreation: false,
-	}
-
-	if ca.conf.Version.IsAtLeast(V1_0_0_0) {
-		request.Version = 5
-	} else if ca.conf.Version.IsAtLeast(V0_11_0_0) {
-		request.Version = 4
-	}
-
+	request := NewMetadataRequest(ca.conf.Version, topics)
 	response, err := controller.GetMetadata(request)
 	if err != nil {
 		return nil, err
@@ -304,14 +294,7 @@ func (ca *clusterAdmin) DescribeCluster() (brokers []*Broker, controllerID int32
 		return nil, int32(0), err
 	}
 
-	request := &MetadataRequest{
-		Topics: []string{},
-	}
-
-	if ca.conf.Version.IsAtLeast(V0_10_0_0) {
-		request.Version = 1
-	}
-
+	request := NewMetadataRequest(ca.conf.Version, nil)
 	response, err := controller.GetMetadata(request)
 	if err != nil {
 		return nil, int32(0), err
@@ -352,7 +335,7 @@ func (ca *clusterAdmin) ListTopics() (map[string]TopicDetail, error) {
 	}
 	_ = b.Open(ca.client.Config())
 
-	metadataReq := &MetadataRequest{}
+	metadataReq := NewMetadataRequest(ca.conf.Version, nil)
 	metadataResp, err := b.GetMetadata(metadataReq)
 	if err != nil {
 		return nil, err
@@ -1050,12 +1033,12 @@ func (ca *clusterAdmin) DescribeLogDirs(brokerIds []int32) (allLogDirs map[int32
 	wg := sync.WaitGroup{}
 
 	for _, b := range brokerIds {
-		wg.Add(1)
 		broker, err := ca.findBroker(b)
 		if err != nil {
 			Logger.Printf("Unable to find broker with ID = %v\n", b)
 			continue
 		}
+		wg.Add(1)
 		go func(b *Broker, conf *Config) {
 			defer wg.Done()
 			_ = b.Open(conf) // Ensure that broker is opened

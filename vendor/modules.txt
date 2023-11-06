@@ -1,5 +1,5 @@
-# github.com/Shopify/sarama v1.34.1
-## explicit; go 1.16
+# github.com/Shopify/sarama v1.38.1
+## explicit; go 1.17
 github.com/Shopify/sarama
 # github.com/bitly/go-simplejson v0.5.0
 ## explicit
@@ -40,11 +40,11 @@ github.com/davecgh/go-spew/spew
 ## explicit; go 1.16
 github.com/deepmap/oapi-codegen/pkg/runtime
 github.com/deepmap/oapi-codegen/pkg/types
-# github.com/eapache/go-resiliency v1.2.0
-## explicit
+# github.com/eapache/go-resiliency v1.3.0
+## explicit; go 1.13
 github.com/eapache/go-resiliency/breaker
-# github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21
-## explicit
+# github.com/eapache/go-xerial-snappy v0.0.0-20230111030713-bf00bc1b83b6
+## explicit; go 1.17
 github.com/eapache/go-xerial-snappy
 # github.com/eapache/queue v1.1.0
 ## explicit
@@ -53,7 +53,7 @@ github.com/eapache/queue
 ## explicit; go 1.18
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
-# github.com/fhmq/hmq v1.5.0
+# github.com/fhmq/hmq v1.5.1
 ## explicit; go 1.18
 github.com/fhmq/hmq/broker
 github.com/fhmq/hmq/broker/lib/sessions
@@ -110,7 +110,7 @@ github.com/google/uuid
 # github.com/gorilla/websocket v1.5.0
 ## explicit; go 1.12
 github.com/gorilla/websocket
-# github.com/hashicorp/errwrap v1.0.0
+# github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.1
@@ -141,12 +141,12 @@ github.com/jcmturner/aescts/v2
 # github.com/jcmturner/dnsutils/v2 v2.0.0
 ## explicit; go 1.13
 github.com/jcmturner/dnsutils/v2
-# github.com/jcmturner/gofork v1.0.0
-## explicit
+# github.com/jcmturner/gofork v1.7.6
+## explicit; go 1.7
 github.com/jcmturner/gofork/encoding/asn1
 github.com/jcmturner/gofork/x/crypto/pbkdf2
-# github.com/jcmturner/gokrb5/v8 v8.4.2
-## explicit; go 1.14
+# github.com/jcmturner/gokrb5/v8 v8.4.3
+## explicit; go 1.16
 github.com/jcmturner/gokrb5/v8/asn1tools
 github.com/jcmturner/gokrb5/v8/client
 github.com/jcmturner/gokrb5/v8/config
@@ -184,8 +184,8 @@ github.com/jcmturner/rpc/v2/ndr
 # github.com/json-iterator/go v1.1.12
 ## explicit; go 1.12
 github.com/json-iterator/go
-# github.com/klauspost/compress v1.15.6
-## explicit; go 1.16
+# github.com/klauspost/compress v1.15.15
+## explicit; go 1.17
 github.com/klauspost/compress
 github.com/klauspost/compress/fse
 github.com/klauspost/compress/huff0
@@ -218,7 +218,7 @@ github.com/pelletier/go-toml/v2/internal/characters
 github.com/pelletier/go-toml/v2/internal/danger
 github.com/pelletier/go-toml/v2/internal/tracker
 github.com/pelletier/go-toml/v2/unstable
-# github.com/pierrec/lz4/v4 v4.1.14
+# github.com/pierrec/lz4/v4 v4.1.17
 ## explicit; go 1.14
 github.com/pierrec/lz4/v4
 github.com/pierrec/lz4/v4/internal/lz4block
@@ -263,16 +263,17 @@ github.com/twitchyliquid64/golang-asm/unsafeheader
 # github.com/ugorji/go/codec v1.2.11
 ## explicit; go 1.11
 github.com/ugorji/go/codec
-# go.uber.org/atomic v1.9.0
-## explicit; go 1.13
+# go.uber.org/atomic v1.10.0
+## explicit; go 1.18
 go.uber.org/atomic
-# go.uber.org/multierr v1.8.0
-## explicit; go 1.14
+# go.uber.org/multierr v1.9.0
+## explicit; go 1.19
 go.uber.org/multierr
-# go.uber.org/zap v1.21.0
-## explicit; go 1.13
+# go.uber.org/zap v1.24.0
+## explicit; go 1.19
 go.uber.org/zap
 go.uber.org/zap/buffer
+go.uber.org/zap/internal
 go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
