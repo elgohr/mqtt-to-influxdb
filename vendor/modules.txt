@@ -53,7 +53,7 @@ github.com/eapache/queue
 ## explicit; go 1.18
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
-# github.com/fhmq/hmq v1.5.4
+# github.com/fhmq/hmq v1.5.5
 ## explicit; go 1.21
 github.com/fhmq/hmq/broker
 github.com/fhmq/hmq/broker/lib/sessions
@@ -208,6 +208,9 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.2
 ## explicit; go 1.12
 github.com/modern-go/reflect2
+# github.com/natefinch/npipe v0.0.0-20160621034901-c1b8fa8bdcce
+## explicit
+github.com/natefinch/npipe
 # github.com/patrickmn/go-cache v2.1.0+incompatible
 ## explicit
 github.com/patrickmn/go-cache
@@ -331,6 +334,8 @@ google.golang.org/protobuf/proto
 google.golang.org/protobuf/reflect/protoreflect
 google.golang.org/protobuf/reflect/protoregistry
 google.golang.org/protobuf/runtime/protoiface
+# gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce
+## explicit
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
