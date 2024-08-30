@@ -53,7 +53,7 @@ github.com/eapache/queue
 ## explicit; go 1.20
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
-# github.com/fhmq/hmq v1.5.5
+# github.com/fhmq/hmq v1.5.6
 ## explicit; go 1.21
 github.com/fhmq/hmq/broker
 github.com/fhmq/hmq/broker/lib/sessions
