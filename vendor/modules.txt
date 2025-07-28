@@ -1,11 +1,11 @@
 # github.com/Shopify/sarama v1.38.1
 ## explicit; go 1.17
 github.com/Shopify/sarama
-# github.com/bitly/go-simplejson v0.5.0
-## explicit
+# github.com/bitly/go-simplejson v0.5.1
+## explicit; go 1.17
 github.com/bitly/go-simplejson
-# github.com/bytedance/sonic v1.9.1
-## explicit; go 1.15
+# github.com/bytedance/sonic v1.11.6
+## explicit; go 1.16
 github.com/bytedance/sonic
 github.com/bytedance/sonic/ast
 github.com/bytedance/sonic/decoder
@@ -15,24 +15,32 @@ github.com/bytedance/sonic/internal/cpu
 github.com/bytedance/sonic/internal/decoder
 github.com/bytedance/sonic/internal/encoder
 github.com/bytedance/sonic/internal/jit
-github.com/bytedance/sonic/internal/loader
 github.com/bytedance/sonic/internal/native
 github.com/bytedance/sonic/internal/native/avx
 github.com/bytedance/sonic/internal/native/avx2
+github.com/bytedance/sonic/internal/native/neon
 github.com/bytedance/sonic/internal/native/sse
 github.com/bytedance/sonic/internal/native/types
 github.com/bytedance/sonic/internal/resolver
 github.com/bytedance/sonic/internal/rt
-github.com/bytedance/sonic/loader
 github.com/bytedance/sonic/option
 github.com/bytedance/sonic/unquote
 github.com/bytedance/sonic/utf8
-# github.com/cespare/xxhash/v2 v2.1.2
+# github.com/bytedance/sonic/loader v0.1.1
+## explicit; go 1.16
+github.com/bytedance/sonic/loader
+github.com/bytedance/sonic/loader/internal/abi
+github.com/bytedance/sonic/loader/internal/rt
+# github.com/cespare/xxhash/v2 v2.3.0
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
-# github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311
-## explicit; go 1.15
-github.com/chenzhuoyu/base64x
+# github.com/cloudwego/base64x v0.1.4
+## explicit; go 1.16
+github.com/cloudwego/base64x
+# github.com/cloudwego/iasm v0.2.0
+## explicit; go 1.16
+github.com/cloudwego/iasm/expr
+github.com/cloudwego/iasm/x86_64
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
@@ -53,8 +61,8 @@ github.com/eapache/queue
 ## explicit; go 1.20
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
-# github.com/fhmq/hmq v1.5.6
-## explicit; go 1.21
+# github.com/fhmq/hmq v1.5.7
+## explicit; go 1.23.3
 github.com/fhmq/hmq/broker
 github.com/fhmq/hmq/broker/lib/sessions
 github.com/fhmq/hmq/broker/lib/topics
@@ -64,7 +72,7 @@ github.com/fhmq/hmq/plugins/auth/authfile
 github.com/fhmq/hmq/plugins/auth/authhttp
 github.com/fhmq/hmq/plugins/bridge
 github.com/fhmq/hmq/pool
-# github.com/gabriel-vasile/mimetype v1.4.2
+# github.com/gabriel-vasile/mimetype v1.4.3
 ## explicit; go 1.20
 github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
@@ -73,7 +81,7 @@ github.com/gabriel-vasile/mimetype/internal/magic
 # github.com/gin-contrib/sse v0.1.0
 ## explicit; go 1.12
 github.com/gin-contrib/sse
-# github.com/gin-gonic/gin v1.9.1
+# github.com/gin-gonic/gin v1.10.1
 ## explicit; go 1.20
 github.com/gin-gonic/gin
 github.com/gin-gonic/gin/binding
@@ -87,7 +95,7 @@ github.com/go-playground/locales/currency
 # github.com/go-playground/universal-translator v0.18.1
 ## explicit; go 1.18
 github.com/go-playground/universal-translator
-# github.com/go-playground/validator/v10 v10.14.0
+# github.com/go-playground/validator/v10 v10.20.0
 ## explicit; go 1.18
 github.com/go-playground/validator/v10
 # github.com/goccy/go-json v0.10.2
@@ -193,13 +201,14 @@ github.com/klauspost/compress/internal/cpuinfo
 github.com/klauspost/compress/internal/snapref
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
-# github.com/klauspost/cpuid/v2 v2.2.4
+# github.com/klauspost/cpuid/v2 v2.2.7
 ## explicit; go 1.15
 github.com/klauspost/cpuid/v2
-# github.com/leodido/go-urn v1.2.4
-## explicit; go 1.16
+# github.com/leodido/go-urn v1.4.0
+## explicit; go 1.18
 github.com/leodido/go-urn
-# github.com/mattn/go-isatty v0.0.19
+github.com/leodido/go-urn/scim/schema
+# github.com/mattn/go-isatty v0.0.20
 ## explicit; go 1.15
 github.com/mattn/go-isatty
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
@@ -214,7 +223,7 @@ github.com/natefinch/npipe
 # github.com/patrickmn/go-cache v2.1.0+incompatible
 ## explicit
 github.com/patrickmn/go-cache
-# github.com/pelletier/go-toml/v2 v2.0.8
+# github.com/pelletier/go-toml/v2 v2.2.2
 ## explicit; go 1.16
 github.com/pelletier/go-toml/v2
 github.com/pelletier/go-toml/v2/internal/characters
@@ -264,16 +273,13 @@ github.com/twitchyliquid64/golang-asm/objabi
 github.com/twitchyliquid64/golang-asm/src
 github.com/twitchyliquid64/golang-asm/sys
 github.com/twitchyliquid64/golang-asm/unsafeheader
-# github.com/ugorji/go/codec v1.2.11
+# github.com/ugorji/go/codec v1.2.12
 ## explicit; go 1.11
 github.com/ugorji/go/codec
-# go.uber.org/atomic v1.10.0
-## explicit; go 1.18
-go.uber.org/atomic
-# go.uber.org/multierr v1.9.0
+# go.uber.org/multierr v1.10.0
 ## explicit; go 1.19
 go.uber.org/multierr
-# go.uber.org/zap v1.24.0
+# go.uber.org/zap v1.27.0
 ## explicit; go 1.19
 go.uber.org/zap
 go.uber.org/zap/buffer
@@ -281,17 +287,19 @@ go.uber.org/zap/internal
 go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
+go.uber.org/zap/internal/pool
+go.uber.org/zap/internal/stacktrace
 go.uber.org/zap/zapcore
-# golang.org/x/arch v0.3.0
-## explicit; go 1.17
+# golang.org/x/arch v0.8.0
+## explicit; go 1.18
 golang.org/x/arch/x86/x86asm
-# golang.org/x/crypto v0.36.0
-## explicit; go 1.23
+# golang.org/x/crypto v0.40.0
+## explicit; go 1.23.0
 golang.org/x/crypto/md4
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
-# golang.org/x/net v0.38.0
-## explicit; go 1.23
+# golang.org/x/net v0.42.0
+## explicit; go 1.23.0
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/http/httpguts
@@ -304,15 +312,15 @@ golang.org/x/net/internal/socks
 golang.org/x/net/proxy
 golang.org/x/net/publicsuffix
 golang.org/x/net/websocket
-# golang.org/x/sync v0.12.0
-## explicit; go 1.23
+# golang.org/x/sync v0.16.0
+## explicit; go 1.23.0
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.31.0
-## explicit; go 1.23
+# golang.org/x/sys v0.34.0
+## explicit; go 1.23.0
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
-# golang.org/x/text v0.23.0
-## explicit; go 1.23
+# golang.org/x/text v0.27.0
+## explicit; go 1.23.0
 golang.org/x/text/internal/language
 golang.org/x/text/internal/language/compact
 golang.org/x/text/internal/tag
@@ -321,7 +329,7 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# google.golang.org/protobuf v1.33.0
+# google.golang.org/protobuf v1.34.1
 ## explicit; go 1.17
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/detrand
@@ -336,8 +344,6 @@ google.golang.org/protobuf/proto
 google.golang.org/protobuf/reflect/protoreflect
 google.golang.org/protobuf/reflect/protoregistry
 google.golang.org/protobuf/runtime/protoiface
-# gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce
-## explicit
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
