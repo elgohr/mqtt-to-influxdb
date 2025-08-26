@@ -7,7 +7,7 @@ require (
 	github.com/fhmq/hmq v1.5.7
 	github.com/influxdata/influxdb-client-go/v2 v2.9.2
 	github.com/satori/go.uuid v1.2.0
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 )
 
 require (
