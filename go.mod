@@ -7,7 +7,7 @@ require (
 	github.com/fhmq/hmq v1.5.7
 	github.com/influxdata/influxdb-client-go/v2 v2.9.2
 	github.com/satori/go.uuid v1.2.0
-	github.com/stretchr/testify v1.12.0
+	github.com/stretchr/testify v1.12.1
 )
 
 require (
@@ -59,6 +59,7 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.52.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
